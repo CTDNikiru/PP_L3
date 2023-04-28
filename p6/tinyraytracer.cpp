@@ -41,7 +41,10 @@ constexpr Material red_rubber = {1.0, {1.4, 0.3, 0.0, 0.0}, {0.3, 0.1, 0.1}, 10.
 constexpr Material mirror = {1.0, {0.0, 16.0, 0.8, 0.0}, {1.0, 1.0, 1.0}, 1425.};
 
 constexpr Sphere spheres[] = {
-    {{-3, 0, -16}, 2, ivory}};
+    {{-3, 0, -16}, 2, ivory},
+    {{-1.0, -1.5, -12}, 2, glass},
+    {{1.5, -0.5, -18}, 3, red_rubber},
+    {{7, 5, -18}, 4, mirror}};
 
 constexpr vec3 lights[] = {
     {-20, 20, 20},
@@ -118,7 +121,7 @@ vec3 cast_ray(const vec3 &orig, const vec3 &dir, const int depth = 0)
         return {0.2, 0.7, 0.8}; // background color
 
     float diffuse_light_intensity = 0, specular_light_intensity = 0;
-//#pragma omp parallel for
+#pragma omp parallel for
     for (const vec3 &light : lights)
     { // checking if the point lies in the shadow of the light
         vec3 light_dir = (light - point).normalized();
@@ -135,14 +138,14 @@ int main()
 {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     //Устанавливаем максимум потоков
-//#pragma omp parallel num_threads(4)
+#pragma omp parallel num_threads(4)
     {
         
         constexpr int width = 400;
         constexpr int height = 400;
         constexpr float fov = 1.05; // 60 degrees field of view in radians
         std::vector<vec3> framebuffer(width * height);
-//#pragma omp parallel for
+#pragma omp parallel for
         for (int pix = 0; pix < width * height; pix++)
         { // actual rendering loop
             float dir_x = (pix % width + 0.5) - width / 2.;
