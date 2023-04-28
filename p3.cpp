@@ -9,6 +9,7 @@ int f(int val)
     {
         val += -sin(val);
     }
+
     return val;
 }
 
@@ -19,6 +20,7 @@ int main()
     for (int i = 0; i < 100; i++)
         b[i] = i;
 
+#pragma omp parallel for
     for (int i = 0; i < 100; i++)
     {
         a[i] = f(b[i]);
@@ -26,8 +28,11 @@ int main()
     }
     int result = 0;
 
+#pragma omp parallel for reduction(+ \
+                                   : result)
     for (int i = 0; i < 100; i++)
         result += (a[i] + b[i]);
     cout << "Result = " << result << endl;
+
     return 0;
 }
