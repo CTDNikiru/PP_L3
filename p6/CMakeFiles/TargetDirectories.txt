@@ -1,3 +1,0 @@
-/home/nikiru/PP/tinyraytracer/CMakeFiles/tinyraytracer.dir
-/home/nikiru/PP/tinyraytracer/CMakeFiles/edit_cache.dir
-/home/nikiru/PP/tinyraytracer/CMakeFiles/rebuild_cache.dir
