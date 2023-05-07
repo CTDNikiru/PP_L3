@@ -28,7 +28,8 @@ int main() {
             #pragma omp critical 
             sum += a[i]; 
         // Каждый поток выводит свою частичную сумму
-        cout << "Thread " << id << ", partial sum = " << sum << endl; 
+        printf("Thread %d, partial sum = %d\n", id, sum);
+        //cout << "Thread " << id << ", partial sum = " << sum << endl; 
     } 
     // Благодаря опции reduction сумма частичных
     // результатов добавлена к значению переменной

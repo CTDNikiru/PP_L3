@@ -135,45 +135,28 @@ vec3 cast_ray(const vec3 &orig, const vec3 &dir, const int depth = 0)
     return material.diffuse_color * diffuse_light_intensity * material.albedo[0] + vec3{1., 1., 1.} * specular_light_intensity * material.albedo[1];
 }
 
-#define NUM_THREADS 7
-
 int main()
 {
-    constexpr int width = 1600;
-    constexpr int height = 1600;
+    constexpr int width = 400;
+    constexpr int height = 400;
     constexpr float fov = 1.05; // 60 degrees field of view in radians
     std::vector<vec3> framebuffer(width * height);
     int pix = 0;
 
-    int max_pixels = width * height;
-    int* max_pix_array = new int[NUM_THREADS];
-    int* start_pix_array = new int[NUM_THREADS];
-    int work_on_one_thread = max_pixels / NUM_THREADS;
-
-    for(int i = 0; i<NUM_THREADS-1; i++){
-        start_pix_array[i] = i * work_on_one_thread;
-        max_pix_array[i] = start_pix_array[i] + work_on_one_thread - 1;
-    }
-    
-    start_pix_array[NUM_THREADS-1] = (NUM_THREADS-1)*work_on_one_thread;
-    max_pix_array[NUM_THREADS-1] = max_pixels;
-
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-#pragma omp parallel num_threads(NUM_THREADS) default(none) private(pix) shared(framebuffer, max_pix_array, start_pix_array)
+    // printf("started by tid %d, start: %d, end: %d\n", omp_get_thread_num(), start_pix_array[omp_get_thread_num()], max_pix_array[omp_get_thread_num()]);
+    for (pix = 0; pix < width * height; pix++) // Рендер
     {
-        //printf("started by tid %d, start: %d, end: %d\n", omp_get_thread_num(), start_pix_array[omp_get_thread_num()], max_pix_array[omp_get_thread_num()]);
-        for (pix = start_pix_array[omp_get_thread_num()]; pix < max_pix_array[omp_get_thread_num()]; pix++) // Рендер
-        {
-            float dir_x = (pix % width + 0.5) - width / 2.;
-            float dir_y = -(pix / width + 0.5) + height / 2.; // this flips the image at the same time
-            float dir_z = -height / (2. * tan(fov / 2.));
-            framebuffer[pix] = cast_ray(vec3{0, 0, 0}, vec3{dir_x, dir_y, dir_z}.normalized());
-        }
+        float dir_x = (pix % width + 0.5) - width / 2.;
+        float dir_y = -(pix / width + 0.5) + height / 2.; // this flips the image at the same time
+        float dir_z = -height / (2. * tan(fov / 2.));
+        framebuffer[pix] = cast_ray(vec3{0, 0, 0}, vec3{dir_x, dir_y, dir_z}.normalized());
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Execution time = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
     std::ofstream ofs("./out.ppm", std::ios::binary);
-    ofs << "P6\n" << width << " " << height << "\n255\n";
+    ofs << "P6\n"
+        << width << " " << height << "\n255\n";
     for (vec3 &color : framebuffer)
     {
         float max = std::max(1.f, std::max(color[0], std::max(color[1], color[2])));

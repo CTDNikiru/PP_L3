@@ -1,5 +1,3 @@
-
-// g++ -std=c++11 -O2 -Wall -pedantic -fopenmp -pthread p4.cpp && ./a.out
 #include <omp.h>
 #include <iostream>
 using namespace std;
@@ -10,11 +8,14 @@ int main()
     int a[a_size], id, size;
     for (int i = 0; i < 100; i++)
         a[i] = i;
+
+    size = omp_get_num_threads();
 // Применение опции reduction
-#pragma omp parallel private(size)
+#pragma omp parallel private(id) shared(size) reduction(+ \
+                                                 : sum)
     { // Начало параллельной области
         id = omp_get_thread_num();
-        size = omp_get_num_threads();
+        
         // Разделяем работу между потоками
         int integer_part = a_size / size;
         int remainder = a_size % size;
@@ -28,7 +29,8 @@ int main()
         for (int i = start; i < end; i++)
             sum += a[i];
         // Каждый поток выводит свою частичную сумму
-        cout << "Thread " << id << ", partial sum = " << sum << endl;
+        printf("Thread %d, partial sum = %d\n", id, sum);
+        //cout << "Thread " << id << ", partial sum = " << sum << endl;
     }
     // Благодаря опции reduction сумма частичных
     // результатов добавлена к значению переменной
